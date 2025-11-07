@@ -1,19 +1,27 @@
 import express from "express";
-import cors from "cors";
 import dotenv from "dotenv";
 import taskRoutes from "./routes/taskRoutes.js";
+import { DB_TYPE, mongo, pool } from "./config/db.js";
 
 dotenv.config();
-
 const app = express();
-const PORT = process.env.PORT || 5000;
-
-
-app.use(cors());
 app.use(express.json());
 
 
-app.use("/api/tasks", taskRoutes);
+app.use("/tasks", taskRoutes);
 
 
-app.listen(PORT, () => console.log(`🚀 Serveur démarré sur le port ${PORT}`));
+app.get("/test-connection", (req, res) => {
+  if (DB_TYPE === "postgres") {
+    pool.query("SELECT 1")
+      .then(() => res.send("Connecté à PostgreSQL"))
+      .catch((err) => res.status(500).send(err.message));
+  } else if (DB_TYPE === "mongo") {
+    const dbState = mongo.connection.readyState === 1 ? "Connecté à MongoDB" : " Non connecté";
+    res.send(dbState);
+  }
+});
+
+app.listen(process.env.PORT, () => {
+  console.log(`🚀 Serveur démarré sur le port ${process.env.PORT}`);
+});

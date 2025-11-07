@@ -1,18 +1,14 @@
-let tasks = [];
-let nextId = 1;
+import { DB_TYPE, mongo } from "../config/db.js";
 
-export const getAllTasks = () => tasks;
+let Task = null;
 
-export const addTask = (title) => {
-  const newTask = { id: nextId++, title, completed: false };
-  tasks.push(newTask);
-  return newTask;
-};
+if (DB_TYPE === "mongo") {
+  const taskSchema = new mongo.Schema({
+    title: { type: String, required: true },
+    completed: { type: Boolean, default: false },
+  });
 
-export const removeTask = (id) => {
-  const index = tasks.findIndex((t) => t.id === id);
-  if (index !== -1) {
-    return tasks.splice(index, 1)[0];
-  }
-  return null;
-};
+  Task = mongo.model("Task", taskSchema);
+}
+
+export { Task };

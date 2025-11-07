@@ -1,15 +1,38 @@
-import pkg from 'pg';
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
 
-const { Pool } = pkg;
+import pg from "pg";
+import mongoose from "mongoose";
 
-const pool = new Pool({
-  host: process.env.PG_HOST,
-  user: process.env.PG_USER,
-  password: process.env.PG_PASSWORD,
-  database: process.env.PG_DATABASE,
-  port: process.env.PG_PORT,
-});
+const { Pool } = pg;
 
-export default pool;
+const DB_TYPE = process.env.DB_TYPE;
+
+let pool = null;
+let mongo = null;
+
+if (DB_TYPE === "postgres") {
+  pool = new Pool({
+    user: process.env.PG_USER,
+    host: process.env.PG_HOST,
+    database: process.env.PG_DATABASE,
+    password: process.env.PG_PASSWORD,
+    port: process.env.PG_PORT,
+  });
+
+  console.log("Connecté à PostgreSQL");
+}
+
+if (DB_TYPE === "mongo") {
+  mongoose
+    .connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    })
+    .then(() => console.log("Connecté à MongoDB"))
+    .catch((err) => console.log(err));
+
+  mongo = mongoose;
+}
+
+export { DB_TYPE, pool, mongo };
